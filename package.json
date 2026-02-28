@@ -1,0 +1,11 @@
+{
+  "name": "validador-arquivos",
+  "version": "0.0.1",
+  "description": "App para registro e validação de arquivos na blockchain",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}
