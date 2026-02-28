@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "hardhat test nodejs",
+    "deploy": "hardhat ignition deploy ./ignition/modules/Deploy.js --network polygonAmoy",
     "deploy-local": "hardhat ignition deploy ./ignition/modules/Deploy.js"
   },
   "author": "",
