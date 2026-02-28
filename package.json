@@ -4,7 +4,8 @@
   "description": "App para registro e validação de arquivos na blockchain",
   "main": "index.js",
   "scripts": {
-    "test": "hardhat test nodejs"
+    "test": "hardhat test nodejs",
+    "deploy-local": "hardhat ignition deploy ./ignition/modules/Deploy.js"
   },
   "author": "",
   "license": "MIT",
