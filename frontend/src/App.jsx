@@ -10,7 +10,7 @@ const FormInput = ({ label, id, ...props }) => (
     <input
       id={id}
       {...props}
-      className="w-full bg-gray-800 border border-gray-700 text-white rounded-md p-3 text-sm focus:border-green-500 focus:ring-green-500 focus:outline-none transition"
+      className="w-full bg-gray-800 border border-gray-700 text-white rounded-md p-3 text-sm focus:border-teal-500 focus:ring-teal-500 focus:outline-none transition"
     />
   </div>
 );
@@ -21,9 +21,8 @@ const FileInput = ({ label, id, onChange, disabled, ...props }) => (
       {label}
     </label>
     <div
-      className={`w-full border border-gray-700 rounded-md p-3 text-sm ${
-        disabled ? 'bg-gray-900 text-gray-500' : 'bg-gray-800 text-gray-400'
-      }`}
+      className={`w-full border border-gray-700 rounded-md p-3 text-sm ${disabled ? 'bg-gray-900 text-gray-500' : 'bg-gray-800 text-gray-400'
+        }`}
     >
       <input
         id={id}
@@ -35,9 +34,9 @@ const FileInput = ({ label, id, onChange, disabled, ...props }) => (
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-md file:border-0
                   file:text-sm file:font-semibold
-                  file:bg-green-600 file:text-white
+                  file:bg-teal-600 file:text-white
                   file:cursor-pointer
-                  hover:file:bg-green-700 transition
+                  hover:file:bg-teal-700 transition
                   disabled:file:bg-gray-700 disabled:file:text-gray-300 disabled:file:cursor-not-allowed"
       />
     </div>
@@ -48,8 +47,8 @@ const ActionButton = ({ loading, disabled, children, ...props }) => (
   <button
     {...props}
     disabled={loading || disabled}
-    className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-md 
-               hover:bg-green-700 transition duration-150 ease-in-out
+    className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-md 
+               hover:bg-teal-700 transition duration-150 ease-in-out
                disabled:opacity-50 disabled:cursor-not-allowed
                flex items-center justify-center space-x-2"
   >
@@ -69,7 +68,8 @@ function App() {
   const [desc, setDesc] = useState('');
   const [name, setName] = useState('');
   const [modalData, setModalData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingRegister, setLoadingRegister] = useState(false);
+  const [loadingValidate, setLoadingValidate] = useState(false);
 
   // Estado para armazenar a carteira conectada
   const [account, setAccount] = useState("");
@@ -148,7 +148,7 @@ function App() {
     if (!file || desc.length > 255 || name.length > 255) return alert("Dados inválidos");
     if (!account) return alert("Por favor, conecte sua MetaMask primeiro!");
 
-    setLoading(true);
+    setLoadingRegister(true);
     let currentGasPrice = null;
     let tentativas = 0;
     const maxTentativas = 5;
@@ -182,7 +182,7 @@ function App() {
             txLink: `${import.meta.env.VITE_SCAN_URL}${tx.hash}`
           });
 
-          setLoading(false);
+          setLoadingRegister(false);
           return;
         } catch (error) {
           const errorMsg = error.message || '';
@@ -228,14 +228,14 @@ function App() {
       }
     }
 
-    setLoading(false);
+    setLoadingRegister(false);
   };
 
   const handleValidate = async (e) => {
     e.preventDefault();
     if (!file) return;
 
-    setLoading(true);
+    setLoadingValidate(true);
     try {
       const hashGerado = await generateHash(file);
       const hashBytes32 = "0x" + hashGerado;
@@ -248,16 +248,23 @@ function App() {
       if (result[0] === true) {
         setModalData({
           title: "Arquivo Válido",
-          message: `Emissor: ${result[2]} | Descrição: ${result[1]} | Data: ${new Date(Number(result[3]) * 1000).toLocaleString()}`
+          data: [
+            { label: "Emissor", value: result[2] },
+            { label: "Descrição", value: result[1] },
+            { label: "Data de Registro", value: new Date(Number(result[3]) * 1000).toLocaleString() }
+          ]
         });
       } else {
-        setModalData({ title: "Arquivo Inválido", message: "Este arquivo não consta na blockchain ou não foi registrado pela carteira administradora do contrato." });
+        setModalData({
+          title: "Arquivo Inválido",
+          message: "Este arquivo não consta na blockchain ou não foi registrado pela carteira administradora do contrato."
+        });
       }
     } catch (error) {
       console.error(error);
       alert("Erro na validação. Tente novamente.");
     }
-    setLoading(false);
+    setLoadingValidate(false);
   };
 
   return (
@@ -271,7 +278,7 @@ function App() {
           <div className="flex items-center space-x-3">
             {account ? (
               <div className="flex items-center gap-2.5 bg-gray-800 border border-gray-700 px-4 py-2 rounded-full">
-                <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse"></span>
+                <span className="h-3 w-3 rounded-full bg-teal-500 animate-pulse"></span>
                 <span className="text-sm font-medium text-gray-200">
                   {`Conectado: ${account.substring(0, 6)}...${account.substring(account.length - 4)}`}
                 </span>
@@ -279,9 +286,9 @@ function App() {
             ) : (
               <button
                 onClick={connectWallet}
-                className="bg-green-600 text-white font-bold py-2.5 px-6 rounded-md hover:bg-green-700 transition duration-150 flex items-center gap-2"
+                className="bg-teal-600 text-white font-bold py-2.5 px-6 rounded-md hover:bg-teal-700 transition duration-150 flex items-center gap-2"
               >
-                <img src="/metamask.svg" alt="" className="h-5 w-5" />
+                <img src="/src/assets/metamask-icon.svg" alt="" className="h-5 w-5" />
                 Conectar MetaMask
               </button>
             )}
@@ -293,7 +300,7 @@ function App() {
 
         {/* Secção de Registro */}
         <section className="bg-gray-900 border border-gray-800 rounded-lg p-8 shadow-xl">
-          <h2 className="text-xl font-bold mb-6 border-l-4 border-green-600 pl-3">
+          <h2 className="text-xl font-bold mb-6 border-l-4 border-teal-600 pl-3">
             Registrar Arquivo
           </h2>
           <form onSubmit={handleRegister}>
@@ -328,7 +335,7 @@ function App() {
             />
             <ActionButton
               type={account ? "submit" : "button"}
-              loading={loading}
+              loading={loadingRegister}
               onClick={!account ? connectWallet : undefined}
             >
               {account ? "Registrar na Blockchain" : "Conectar MetaMask"}
@@ -338,7 +345,7 @@ function App() {
 
         {/* Secção de Validação */}
         <section className="bg-gray-900 border border-gray-800 rounded-lg p-8 shadow-xl flex flex-col">
-          <h2 className="text-xl font-bold mb-6 border-l-4 border-green-600 pl-3">
+          <h2 className="text-xl font-bold mb-6 border-l-4 border-teal-600 pl-3">
             Validar Arquivo
           </h2>
           <form onSubmit={handleValidate} className="flex-grow flex flex-col justify-between">
@@ -349,7 +356,7 @@ function App() {
               required
             />
             <div className="pt-4">
-              <ActionButton type="submit" loading={loading}>
+              <ActionButton type="submit" loading={loadingValidate}>
                 Validar Autenticidade
               </ActionButton>
             </div>
@@ -359,16 +366,37 @@ function App() {
 
       {/* Modal de Respostas */}
       {modalData && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-6 z-[100] backdrop-blur-sm">
-          <div className="bg-gray-900 border border-gray-700 p-8 rounded-lg shadow-2xl max-w-lg w-full relative">
-            <h2 className="text-2xl font-bold mb-4">{modalData.title}</h2>
-            <p className="text-gray-300 mb-6 whitespace-pre-wrap">{modalData.message}</p>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-[100] backdrop-blur-md">
+          <div className="bg-gray-900/95 border border-gray-700 p-8 rounded-lg shadow-2xl max-w-2xl w-full relative">
+            <h2 className="text-2xl font-bold mb-6">{modalData.title}</h2>
+
+            {modalData.data ? (
+              <div className="mb-6 overflow-hidden rounded-lg border border-gray-700">
+                <table className="w-full">
+                  <tbody>
+                    {modalData.data.map((item, index) => (
+                      <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                        <td className="bg-gray-800 px-4 py-3 font-semibold text-gray-300 w-1/3">
+                          {item.label}
+                        </td>
+                        <td className="bg-gray-850 px-4 py-3 text-gray-200 break-all">
+                          {item.value}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-300 mb-6 whitespace-pre-wrap">{modalData.message}</p>
+            )}
+
             {modalData.txLink && (
               <a
                 href={modalData.txLink}
                 target="_blank"
                 rel="noreferrer"
-                className="block text-green-400 font-medium mb-8 hover:text-green-300 underline break-all"
+                className="block text-teal-400 font-medium mb-6 hover:text-teal-300 underline break-all"
               >
                 Ver Transação na PolygonScan
               </a>
