@@ -15,24 +15,30 @@ const FormInput = ({ label, id, ...props }) => (
   </div>
 );
 
-const FileInput = ({ label, id, onChange, ...props }) => (
+const FileInput = ({ label, id, onChange, disabled, ...props }) => (
   <div className="mb-6">
     <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
       {label}
     </label>
-    <div className="w-full bg-gray-800 border border-gray-700 rounded-md p-3 text-sm text-gray-400">
+    <div
+      className={`w-full border border-gray-700 rounded-md p-3 text-sm ${
+        disabled ? 'bg-gray-900 text-gray-500' : 'bg-gray-800 text-gray-400'
+      }`}
+    >
       <input
         id={id}
         type="file"
         onChange={onChange}
+        disabled={disabled}
         {...props}
-        className="block w-full text-sm text-gray-400
+        className="block w-full text-sm text-gray-400 disabled:text-gray-500 disabled:cursor-not-allowed
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-md file:border-0
                   file:text-sm file:font-semibold
                   file:bg-green-600 file:text-white
                   file:cursor-pointer
-                  hover:file:bg-green-700 transition"
+                  hover:file:bg-green-700 transition
+                  disabled:file:bg-gray-700 disabled:file:text-gray-300 disabled:file:cursor-not-allowed"
       />
     </div>
   </div>
@@ -288,7 +294,7 @@ function App() {
         {/* Secção de Registro */}
         <section className="bg-gray-900 border border-gray-800 rounded-lg p-8 shadow-xl">
           <h2 className="text-xl font-bold mb-6 border-l-4 border-green-600 pl-3">
-            Registrar Arquivo (Apenas Admin)
+            Registrar Arquivo
           </h2>
           <form onSubmit={handleRegister}>
             <FormInput
@@ -299,6 +305,7 @@ function App() {
               maxLength="255"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
+              disabled={!account}
               required
             />
             <FormInput
@@ -309,16 +316,22 @@ function App() {
               maxLength="255"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={!account}
               required
             />
             <FileInput
               label="Selecione o Arquivo"
               id="file"
               onChange={(e) => setFile(e.target.files[0])}
+              disabled={!account}
               required
             />
-            <ActionButton type="submit" loading={loading} disabled={!account}>
-              Registrar na Blockchain
+            <ActionButton
+              type={account ? "submit" : "button"}
+              loading={loading}
+              onClick={!account ? connectWallet : undefined}
+            >
+              {account ? "Registrar na Blockchain" : "Conectar MetaMask"}
             </ActionButton>
           </form>
         </section>
@@ -326,7 +339,7 @@ function App() {
         {/* Secção de Validação */}
         <section className="bg-gray-900 border border-gray-800 rounded-lg p-8 shadow-xl flex flex-col">
           <h2 className="text-xl font-bold mb-6 border-l-4 border-green-600 pl-3">
-            Validar Arquivo (Público)
+            Validar Arquivo
           </h2>
           <form onSubmit={handleValidate} className="flex-grow flex flex-col justify-between">
             <FileInput
