@@ -104,7 +104,9 @@ function App() {
           // Pega o contrato com a capacidade de assinar transações
           const contract = await getContract(true);
 
-          const gasPrice = ethers.parseUnits(currentGasPrice.toString(), 'gwei');
+          // Garante que não passará de 9 casas decimais para evitar falha no parseUnits
+          const gasPriceString = currentGasPrice.toFixed(9);
+          const gasPrice = ethers.parseUnits(gasPriceString, 'gwei');
 
           const tx = await contract.registrarArquivo(hashBytes32, desc, name, {
             gasPrice: gasPrice,
@@ -126,25 +128,24 @@ function App() {
           // Verifica se é erro de gas price insuficiente
           if (errorMsg.includes('gas price below minimum') || 
               errorMsg.includes('gas tip cap') ||
-              errorMsg.includes('transaction gas price')) {
+              errorMsg.includes('transaction gas price') ||
+              errorMsg.includes('replacement fee too low')) {
             
             tentativas++;
             if (tentativas < maxTentativas) {
               currentGasPrice += 5; // Aumenta 5 Gwei
-              const confirmation = await new Promise(resolve => {
-                const confirmed = window.confirm(
-                  `Gas price insuficiente. Tentando novamente com ${currentGasPrice.toFixed(2)} Gwei...\n` +
-                  `Tentativa ${tentativas}/${maxTentativas}`
-                );
-                resolve(confirmed);
-              });
+              
+              const confirmed = window.confirm(
+                `Gas price insuficiente. Tentando novamente com ${currentGasPrice.toFixed(2)} Gwei...\n` +
+                `Tentativa ${tentativas}/${maxTentativas}`
+              );
               
               if (!confirmed) {
                 throw new Error("Operação cancelada pelo usuário");
               }
               continue; // Tenta novamente com o novo gas price
             } else {
-              throw new Error("Número máximo de tentativas atingido. Gas price pode estar muito alto.");
+              throw new Error("Número máximo de tentativas atingido. A rede pode estar muito congestionada.");
             }
           } else {
             // Outro tipo de erro
