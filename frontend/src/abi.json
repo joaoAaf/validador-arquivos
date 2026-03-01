@@ -1,0 +1,79 @@
+{
+    "abi": [
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [],
+            "name": "carteiraAdmin",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "hashArquivo",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "string",
+                    "name": "descricao",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "nomeEmissor",
+                    "type": "string"
+                }
+            ],
+            "name": "registrarArquivo",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "hashArquivo",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "validarArquivo",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "ehValido",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "string",
+                    "name": "descricao",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "nomeEmissor",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+}
