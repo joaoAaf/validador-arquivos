@@ -2,6 +2,62 @@ import { useState } from 'react';
 import { ethers } from 'ethers';
 import abiData from './abi.json';
 
+const FormInput = ({ label, id, ...props }) => (
+  <div className="mb-4">
+    <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
+      {label}
+    </label>
+    <input
+      id={id}
+      {...props}
+      className="w-full bg-gray-800 border border-gray-700 text-white rounded-md p-3 text-sm focus:border-green-500 focus:ring-green-500 focus:outline-none transition"
+    />
+  </div>
+);
+
+const FileInput = ({ label, id, onChange, ...props }) => (
+  <div className="mb-6">
+    <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
+      {label}
+    </label>
+    <div className="w-full bg-gray-800 border border-gray-700 rounded-md p-3 text-sm text-gray-400">
+      <input
+        id={id}
+        type="file"
+        onChange={onChange}
+        {...props}
+        className="block w-full text-sm text-gray-400
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-md file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-green-600 file:text-white
+                  file:cursor-pointer
+                  hover:file:bg-green-700 transition"
+      />
+    </div>
+  </div>
+);
+
+const ActionButton = ({ loading, disabled, children, ...props }) => (
+  <button
+    {...props}
+    disabled={loading || disabled}
+    className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-md 
+               hover:bg-green-700 transition duration-150 ease-in-out
+               disabled:opacity-50 disabled:cursor-not-allowed
+               flex items-center justify-center space-x-2"
+  >
+    {loading ? (
+      <>
+        <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+        <span>Aguarde...</span>
+      </>
+    ) : (
+      <span>{children}</span>
+    )}
+  </button>
+);
+
 function App() {
   const [file, setFile] = useState(null);
   const [desc, setDesc] = useState('');
@@ -58,22 +114,22 @@ function App() {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const feeData = await provider.getFeeData();
-      
+
       if (feeData.gasPrice) {
         // Retorna gasPrice em Gwei
         return ethers.formatUnits(feeData.gasPrice, 'gwei');
       }
-      
+
       // Se getFeeData não funcionar, usa eth_feeHistory via JSON-RPC
       const history = await window.ethereum.request({
         method: 'eth_feeHistory',
         params: ['0x4', 'latest', [50]], // últimos 4 blocos, percentil 50
       });
-      
+
       const baseFee = BigInt(history.baseFeePerGas[history.baseFeePerGas.length - 1]);
       const priorityFee = BigInt('2000000000'); // 2 Gwei como padrão
       const gasPrice = baseFee + priorityFee;
-      
+
       return ethers.formatUnits(gasPrice, 'gwei');
     } catch (error) {
       console.warn('Erro ao estimar gas price:', error);
@@ -111,7 +167,7 @@ function App() {
           const tx = await contract.registrarArquivo(hashBytes32, desc, name, {
             gasPrice: gasPrice,
           });
-          
+
           await tx.wait();
 
           setModalData({
@@ -119,27 +175,27 @@ function App() {
             message: "Arquivo registrado na blockchain.",
             txLink: `${import.meta.env.VITE_SCAN_URL}${tx.hash}`
           });
-          
+
           setLoading(false);
           return;
         } catch (error) {
           const errorMsg = error.message || '';
-          
+
           // Verifica se é erro de gas price insuficiente
-          if (errorMsg.includes('gas price below minimum') || 
-              errorMsg.includes('gas tip cap') ||
-              errorMsg.includes('transaction gas price') ||
-              errorMsg.includes('replacement fee too low')) {
-            
+          if (errorMsg.includes('gas price below minimum') ||
+            errorMsg.includes('gas tip cap') ||
+            errorMsg.includes('transaction gas price') ||
+            errorMsg.includes('replacement fee too low')) {
+
             tentativas++;
             if (tentativas < maxTentativas) {
               currentGasPrice += 5; // Aumenta 5 Gwei
-              
+
               const confirmed = window.confirm(
                 `Gas price insuficiente. Tentando novamente com ${currentGasPrice.toFixed(2)} Gwei...\n` +
                 `Tentativa ${tentativas}/${maxTentativas}`
               );
-              
+
               if (!confirmed) {
                 throw new Error("Operação cancelada pelo usuário");
               }
@@ -156,7 +212,7 @@ function App() {
     } catch (error) {
       console.error(error);
       const errorMsg = error.message || error.toString();
-      
+
       if (errorMsg.includes("Operação cancelada")) {
         alert("Operação cancelada pelo usuário.");
       } else if (errorMsg.includes("Administradora")) {
@@ -165,7 +221,7 @@ function App() {
         alert(`Erro ao registrar: ${errorMsg}`);
       }
     }
-    
+
     setLoading(false);
   };
 
@@ -199,48 +255,118 @@ function App() {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>Validador de Arquivos Web3</h1>
+    <div className="min-h-screen bg-gray-950 text-white font-sans">
 
-      {/* PAINEL DE CONEXÃO DA CARTEIRA */}
-      <div style={{ marginBottom: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '5px' }}>
-        {account ? (
-          <p>🟢 Conectado: <strong>{account}</strong></p>
-        ) : (
-          <button onClick={connectWallet} style={{ padding: '10px', background: '#f6851b', color: 'white', border: 'none', cursor: 'pointer' }}>
-            Conectar MetaMask
-          </button>
-        )}
-      </div>
+      {/* Header: Título e Conexão da Carteira */}
+      <header className="border-b border-gray-800 bg-gray-900 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
+          <h1 className="text-3xl font-extrabold tracking-tight">Validador de Arquivos Web3</h1>
 
-      {/* Seção de Registro */}
-      <div style={{ border: '1px solid #ccc', padding: '20px', marginBottom: '20px' }}>
-        <h2>Registrar Arquivo (Apenas Admin)</h2>
-        <form onSubmit={handleRegister}>
-          <input type="file" onChange={(e) => setFile(e.target.files[0])} required /><br /><br />
-          <input type="text" placeholder="Descrição (Max 255)" maxLength="255" value={desc} onChange={(e) => setDesc(e.target.value)} required /><br /><br />
-          <input type="text" placeholder="Nome do Emissor" maxLength="255" value={name} onChange={(e) => setName(e.target.value)} required /><br /><br />
-          <button type="submit" disabled={loading || !account}>Registrar</button>
-        </form>
-      </div>
+          <div className="flex items-center space-x-3">
+            {account ? (
+              <div className="flex items-center gap-2.5 bg-gray-800 border border-gray-700 px-4 py-2 rounded-full">
+                <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse"></span>
+                <span className="text-sm font-medium text-gray-200">
+                  {`Conectado: ${account.substring(0, 6)}...${account.substring(account.length - 4)}`}
+                </span>
+              </div>
+            ) : (
+              <button
+                onClick={connectWallet}
+                className="bg-green-600 text-white font-bold py-2.5 px-6 rounded-md hover:bg-green-700 transition duration-150 flex items-center gap-2"
+              >
+                <img src="/metamask.svg" alt="" className="h-5 w-5" />
+                Conectar MetaMask
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
 
-      {/* Seção de Validação */}
-      <div style={{ border: '1px solid #ccc', padding: '20px' }}>
-        <h2>Validar Arquivo (Público)</h2>
-        <form onSubmit={handleValidate}>
-          <input type="file" onChange={(e) => setFile(e.target.files[0])} required /><br /><br />
-          <button type="submit" disabled={loading}>Validar</button>
-        </form>
-      </div>
+      <main className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-12">
+
+        {/* Secção de Registro */}
+        <section className="bg-gray-900 border border-gray-800 rounded-lg p-8 shadow-xl">
+          <h2 className="text-xl font-bold mb-6 border-l-4 border-green-600 pl-3">
+            Registrar Arquivo (Apenas Admin)
+          </h2>
+          <form onSubmit={handleRegister}>
+            <FormInput
+              label="Descrição do Arquivo"
+              id="desc"
+              type="text"
+              placeholder="Ex: Contrato Social da Empresa"
+              maxLength="255"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              required
+            />
+            <FormInput
+              label="Nome do Emissor"
+              id="name"
+              type="text"
+              placeholder="Ex: Empresa ABC Ltda."
+              maxLength="255"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+            <FileInput
+              label="Selecione o Arquivo"
+              id="file"
+              onChange={(e) => setFile(e.target.files[0])}
+              required
+            />
+            <ActionButton type="submit" loading={loading} disabled={!account}>
+              Registrar na Blockchain
+            </ActionButton>
+          </form>
+        </section>
+
+        {/* Secção de Validação */}
+        <section className="bg-gray-900 border border-gray-800 rounded-lg p-8 shadow-xl flex flex-col">
+          <h2 className="text-xl font-bold mb-6 border-l-4 border-green-600 pl-3">
+            Validar Arquivo (Público)
+          </h2>
+          <form onSubmit={handleValidate} className="flex-grow flex flex-col justify-between">
+            <FileInput
+              label="Selecione o Arquivo para Validação"
+              id="validateFile"
+              onChange={(e) => setFile(e.target.files[0])}
+              required
+            />
+            <div className="pt-4">
+              <ActionButton type="submit" loading={loading}>
+                Validar Autenticidade
+              </ActionButton>
+            </div>
+          </form>
+        </section>
+      </main>
 
       {/* Modal de Respostas */}
       {modalData && (
-        <div style={{ position: 'fixed', top: '20%', left: '30%', background: 'white', padding: '30px', border: '2px solid black', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
-          <h2>{modalData.title}</h2>
-          <p>{modalData.message}</p>
-          {modalData.txLink && <a href={modalData.txLink} target="_blank" rel="noreferrer">Ver Transação na PolygonScan</a>}
-          <br /><br />
-          <button onClick={() => setModalData(null)}>Fechar</button>
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-6 z-[100] backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-700 p-8 rounded-lg shadow-2xl max-w-lg w-full relative">
+            <h2 className="text-2xl font-bold mb-4">{modalData.title}</h2>
+            <p className="text-gray-300 mb-6 whitespace-pre-wrap">{modalData.message}</p>
+            {modalData.txLink && (
+              <a
+                href={modalData.txLink}
+                target="_blank"
+                rel="noreferrer"
+                className="block text-green-400 font-medium mb-8 hover:text-green-300 underline break-all"
+              >
+                Ver Transação na PolygonScan
+              </a>
+            )}
+            <button
+              onClick={() => setModalData(null)}
+              className="w-full bg-gray-700 text-white font-bold py-3 px-4 rounded-md hover:bg-gray-600 transition"
+            >
+              Fechar
+            </button>
+          </div>
         </div>
       )}
     </div>
