@@ -1,68 +1,10 @@
 import abiData from './abi.json';
+import ActionButton from './components/ActionButton';
+import FileInput from './components/FileInput';
+import FormInput from './components/FormInput';
 import { useContractInteraction } from './hooks/useContractInteraction';
 import { useFileOperations } from './hooks/useFileOperations';
 import { useWalletConnection } from './hooks/useWalletConnection';
-
-const FormInput = ({ label, id, ...props }) => (
-  <div className="mb-4">
-    <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
-      {label}
-    </label>
-    <input
-      id={id}
-      {...props}
-      className="w-full bg-gray-800 border border-gray-700 text-white rounded-md p-3 text-sm focus:border-teal-500 focus:ring-teal-500 focus:outline-none transition"
-    />
-  </div>
-);
-
-const FileInput = ({ label, id, onChange, disabled, ...props }) => (
-  <div className="mb-6">
-    <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
-      {label}
-    </label>
-    <div
-      className={`w-full border border-gray-700 rounded-md p-3 text-sm ${disabled ? 'bg-gray-900 text-gray-500' : 'bg-gray-800 text-gray-400'
-        }`}
-    >
-      <input
-        id={id}
-        type="file"
-        onChange={onChange}
-        disabled={disabled}
-        {...props}
-        className="block w-full text-sm text-gray-400 disabled:text-gray-500 disabled:cursor-not-allowed
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-md file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-teal-600 file:text-white
-                  file:cursor-pointer
-                  hover:file:bg-teal-700 transition
-                  disabled:file:bg-gray-700 disabled:file:text-gray-300 disabled:file:cursor-not-allowed"
-      />
-    </div>
-  </div>
-);
-
-const ActionButton = ({ loading, disabled, children, ...props }) => (
-  <button
-    {...props}
-    disabled={loading || disabled}
-    className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-md 
-               hover:bg-teal-700 transition duration-150 ease-in-out
-               disabled:opacity-50 disabled:cursor-not-allowed
-               flex items-center justify-center space-x-2"
-  >
-    {loading ? (
-      <>
-        <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
-        <span>Aguarde...</span>
-      </>
-    ) : (
-      <span>{children}</span>
-    )}
-  </button>
-);
 
 function App() {
   const walletState = useWalletConnection();
