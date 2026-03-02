@@ -131,8 +131,6 @@ npm run dev
 
 A aplicação estará disponível em: `http://localhost:5173`
 
-O servidor será reinicializado automaticamente quando você fizer mudanças no código (Hot Module Replacement).
-
 #### 5. Build para Produção
 
 Para compilar a aplicação para produção:
