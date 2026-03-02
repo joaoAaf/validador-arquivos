@@ -6,7 +6,7 @@
   "scripts": {
     "test": "hardhat test nodejs",
     "deploy": "hardhat ignition deploy ./ignition/modules/Deploy.js --network polygonAmoy",
-    "deploy-local": "hardhat ignition deploy ./ignition/modules/Deploy.js"
+    "deploy:local": "hardhat ignition deploy ./ignition/modules/Deploy.js"
   },
   "author": "",
   "license": "MIT",
